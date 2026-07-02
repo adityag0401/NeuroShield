@@ -1,3 +1,5 @@
+const API_BASE = "https://neuroshield-rhep.onrender.com";
+
 // ── Navigation ──
 document.querySelectorAll('.nav-btn, .go-to').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -37,7 +39,7 @@ function renderResult(container, data) {
     <div class="conf-track"><div class="conf-fill" style="background: rgb(${r},${g},${b});"></div></div>
     <div class="conf-pct">${data.confidence}% model confidence</div>
     <div class="result-note">${data.note}</div>
-    <a class="download-link" href="/api/report/${data.report_id}" target="_blank">📄 Download PDF Report</a>
+    <a class="download-link" href="${API_BASE}/api/report/${data.report_id}" target="_blank">📄 Download PDF Report</a>
   `;
   requestAnimationFrame(() => {
     container.querySelector('.conf-fill').style.width = data.confidence + '%';
@@ -61,7 +63,7 @@ document.getElementById('mri-btn').addEventListener('click', async () => {
   formData.append('patient_gender', document.getElementById('mri-gender').value);
 
   try {
-    const res = await fetch('/api/mri/predict', { method: 'POST', body: formData });
+    const res = await fetch(`${API_BASE}/api/mri/predict`, { method: 'POST', body: formData });
     const data = await res.json();
     renderResult(resultBox, data);
   } catch (e) {
@@ -88,7 +90,7 @@ document.getElementById('eeg-btn').addEventListener('click', async () => {
   formData.append('patient_gender', document.getElementById('eeg-gender').value);
 
   try {
-    const res = await fetch('/api/eeg/predict', { method: 'POST', body: formData });
+    const res = await fetch(`${API_BASE}/api/eeg/predict`, { method: 'POST', body: formData });
     const data = await res.json();
     renderResult(resultBox, data);
   } catch (e) {
@@ -117,7 +119,7 @@ async function sendChat() {
   chatInput.value = '';
   addBubble('Thinking...', 'bot');
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch(`${API_BASE}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: msg }),
