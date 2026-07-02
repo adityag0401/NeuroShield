@@ -10,7 +10,7 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 import pandas as pd
 import numpy as np
-import gradio as gr
+
 import faiss
 from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -576,6 +576,7 @@ def start_with_file(file_path: str):
     return launch_rag_system(file_path)
 
 if __name__ == "__main__":
+    import gradio as gr
     print("="*60)
     print("🧠 EEG Alzheimer's RAG System - Ready!")
     print("="*60)
