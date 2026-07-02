@@ -1,25 +1,19 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
+# React
+node_modules/
+dist/
 
-# Virtual Environment
+# Python
 .venv/
 venv/
-env/
+__pycache__/
+*.pyc
 
-# Environment Variables
+# Environment
 .env
-
-# Mac
-.DS_Store
 
 # Logs
 *.log
 
-# Database
-*.db
-# PyTorch
-*.pt
-*.pth
+# OS
+.DS_Store
+Thumbs.db
