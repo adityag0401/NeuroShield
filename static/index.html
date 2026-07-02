@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Neuro Shield</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">🛡️</span>
+    <div>
+      <h1>Neuro Shield</h1>
+      <p>AI-Powered Brain Health Diagnostics</p>
+    </div>
+  </div>
+  <div class="badges">
+    <span class="badge">🧠 MRI CNN</span>
+    <span class="badge">⚡ EEG Detector</span>
+    <span class="badge">💬 RAG Chatbot</span>
+    <span class="badge">📄 PDF Reports</span>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="sidebar">
+    <button class="nav-btn active" data-target="dashboard">🏠 Dashboard</button>
+    <button class="nav-btn" data-target="mri">🧠 Alzheimer's MRI</button>
+    <button class="nav-btn" data-target="eeg">⚡ EEG Seizure</button>
+    <button class="nav-btn" data-target="chat">💬 Neurology Chatbot</button>
+    <button class="nav-btn" data-target="about">ℹ️ About</button>
+    <p class="disclaimer">⚠️ For educational and research purposes only. Not a substitute for professional medical advice.</p>
+  </nav>
+
+  <main class="content">
+
+    <section id="dashboard" class="panel active">
+      <div class="hero">
+        <h2>Welcome to Neuro Shield 👋</h2>
+        <p>Upload an MRI scan or EEG graph for instant AI-assisted analysis, or ask the neurology chatbot a question.</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num">4-Class</div><div class="stat-label">MRI Classifier</div></div>
+        <div class="stat-card"><div class="stat-num">178</div><div class="stat-label">EEG Features</div></div>
+        <div class="stat-card"><div class="stat-num">50+</div><div class="stat-label">Neurology Q&amp;As</div></div>
+        <div class="stat-card"><div class="stat-num">Instant</div><div class="stat-label">PDF Reports</div></div>
+      </div>
+      <h3 class="section-title">Choose a tool</h3>
+      <div class="grid">
+        <div class="tool-card">
+          <span class="tool-icon">🧠</span>
+          <h4>Alzheimer's MRI Detection</h4>
+          <p>Upload a brain MRI scan for a 4-class impairment classification with confidence score.</p>
+          <button class="btn-primary go-to" data-target="mri">Open MRI Tool →</button>
+        </div>
+        <div class="tool-card">
+          <span class="tool-icon">⚡</span>
+          <h4>EEG Seizure Detection</h4>
+          <p>Upload an EEG graph image to check for seizure activity in the waveform.</p>
+          <button class="btn-primary go-to" data-target="eeg">Open EEG Tool →</button>
+        </div>
+        <div class="tool-card">
+          <span class="tool-icon">💬</span>
+          <h4>Neurology Chatbot</h4>
+          <p>Ask questions about EEG, Alzheimer's, and related neurology topics.</p>
+          <button class="btn-primary go-to" data-target="chat">Open Chatbot →</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="mri" class="panel">
+      <h3 class="section-title">🧠 Alzheimer's MRI Detection</h3>
+      <div class="two-col">
+        <div class="card">
+          <label>Upload MRI Scan</label>
+          <input type="file" id="mri-file" accept="image/*">
+          <img id="mri-preview" class="preview" style="display:none;">
+          <div class="patient-row">
+            <div><label>Patient Name</label><input type="text" id="mri-name" placeholder="Optional"></div>
+            <div><label>Age</label><input type="text" id="mri-age" placeholder="Optional"></div>
+            <div><label>Gender</label><input type="text" id="mri-gender" placeholder="Optional"></div>
+          </div>
+          <button class="btn-primary" id="mri-btn">🔍 Analyze MRI</button>
+        </div>
+        <div class="card" id="mri-result-wrap">
+          <div id="mri-result" class="placeholder-text">Results will appear here after analysis.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="eeg" class="panel">
+      <h3 class="section-title">⚡ EEG Seizure Detection</h3>
+      <div class="two-col">
+        <div class="card">
+          <label>Upload EEG Graph Image</label>
+          <input type="file" id="eeg-file" accept="image/*">
+          <img id="eeg-preview" class="preview" style="display:none;">
+          <div class="patient-row">
+            <div><label>Patient Name</label><input type="text" id="eeg-name" placeholder="Optional"></div>
+            <div><label>Age</label><input type="text" id="eeg-age" placeholder="Optional"></div>
+            <div><label>Gender</label><input type="text" id="eeg-gender" placeholder="Optional"></div>
+          </div>
+          <button class="btn-primary" id="eeg-btn">🔍 Analyze EEG</button>
+        </div>
+        <div class="card" id="eeg-result-wrap">
+          <div id="eeg-result" class="placeholder-text">Results will appear here after analysis.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="chat" class="panel">
+      <h3 class="section-title">💬 Neurology Chatbot</h3>
+      <div class="card chat-card">
+        <div id="chat-log" class="chat-log"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="e.g., What are EEG changes in Alzheimer's?">
+          <button class="btn-primary" id="chat-send">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="panel">
+      <h3 class="section-title">ℹ️ About Neuro Shield</h3>
+      <div class="card">
+        <p>Neuro Shield combines a CNN-based Alzheimer's MRI classifier, an EEG seizure detector, and a FAISS-powered neurology Q&amp;A chatbot into one platform.</p>
+        <p class="disclaimer-strong">Disclaimer: For educational and research purposes only — not a substitute for professional medical diagnosis. Always consult a qualified neurologist.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="/script.js"></script>
+</body>
+</html>

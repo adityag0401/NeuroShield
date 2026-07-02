@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment Variables
+.env
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+
+# Database
+*.db
+# PyTorch
+*.pt
+*.pth

@@ -1,3 +1,13 @@
+import sys
+import os
+os.environ["USE_TF"] = "0"        
+os.environ["USE_TORCH"] = "1" 
+# Ensure stdout/stderr use UTF-8 on Windows (fixes CP1252 emoji errors)
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 import pandas as pd
 import numpy as np
 import gradio as gr
@@ -10,30 +20,19 @@ import warnings
 import os
 warnings.filterwarnings('ignore')
 
-# Colab-specific imports
-try:
-    from google.colab import files
-    IN_COLAB = True
-    print("✅ Running in Google Colab")
-except ImportError:
-    IN_COLAB = False
-    print("ℹ️ Running outside of Google Colab")
+# Running locally in VS Code
+IN_COLAB = False
+print("ℹ️ Running in VS Code / local environment")
 
 def upload_csv_file():
-    """Helper function to upload CSV file in Google Colab"""
-    if not IN_COLAB:
-        print("This function is only available in Google Colab")
-        return None
-
-    print("📁 Please select your CSV file to upload:")
-    uploaded = files.upload()
-
-    if uploaded:
-        filename = list(uploaded.keys())[0]
-        print(f"✅ Uploaded: {filename}")
-        return f"/content/{filename}"
+    """Prompt the user to enter a local CSV file path (VS Code / local environment)."""
+    print("📁 Enter the path to your CSV file (e.g. C:\\data\\neurology_faq.csv):")
+    path = input("CSV path: ").strip().strip('"').strip("'")
+    if path and os.path.exists(path):
+        print(f"✅ Found: {path}")
+        return path
     else:
-        print("❌ No file uploaded")
+        print(f"❌ File not found: {path}")
         return None
 
 class EEGAlzheimersRAG:
@@ -391,7 +390,6 @@ def create_rag_interface(csv_file_path: str):
                     label="📝 Answer",
                     lines=15,
                     interactive=False,
-                    show_copy_button=True
                 )
 
                 submit_btn.click(
@@ -414,7 +412,7 @@ def create_rag_interface(csv_file_path: str):
                     for i, example in enumerate(example_questions):
                         if i < 3:  # First row
                             gr.Button(example, size="sm").click(
-                                lambda x=example: x,
+                                fn=lambda x=example: x,
                                 outputs=question_input
                             )
 
@@ -422,7 +420,7 @@ def create_rag_interface(csv_file_path: str):
                     for i, example in enumerate(example_questions):
                         if i >= 3:  # Second row
                             gr.Button(example, size="sm").click(
-                                lambda x=example: x,
+                                fn=lambda x=example: x,
                                 outputs=question_input
                             )
 
@@ -448,7 +446,6 @@ def create_rag_interface(csv_file_path: str):
                     label="Similar Questions",
                     lines=12,
                     interactive=False,
-                    show_copy_button=True
                 )
 
                 search_btn.click(
@@ -464,7 +461,6 @@ def create_rag_interface(csv_file_path: str):
                     value=get_dataset_info(),
                     lines=20,
                     interactive=False,
-                    show_copy_button=True
                 )
 
                 refresh_btn = gr.Button("🔄 Refresh Info")
@@ -499,18 +495,27 @@ def create_rag_interface(csv_file_path: str):
         return error_interface
 
 def find_csv_files():
-    """Find all CSV files in the current directory"""
+    """Find Q&A CSV files — prioritises files with 'faq'/'qa'/'question'/'neurology' in the name."""
     csv_files = []
-
-    # Check /content directory (Colab)
-    if os.path.exists("/content"):
-        content_csvs = [f"/content/{f}" for f in os.listdir("/content") if f.endswith('.csv')]
-        csv_files.extend(content_csvs)
 
     # Check current directory
     current_csvs = [f for f in os.listdir(".") if f.endswith('.csv')]
     csv_files.extend(current_csvs)
 
+    # Also check data/ subdirectory if it exists
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    if os.path.isdir(data_dir):
+        data_csvs = [os.path.join(data_dir, f) for f in os.listdir(data_dir) if f.endswith('.csv')]
+        csv_files.extend(data_csvs)
+
+    # Sort: Q&A-sounding names first, raw data files last
+    def qa_score(path):
+        name = os.path.basename(path).lower()
+        if any(kw in name for kw in ['faq', 'qa', 'question', 'neurology', 'answer']):
+            return 0   # highest priority
+        return 1       # lower priority (raw data files like eeg.csv)
+
+    csv_files.sort(key=qa_score)
     return csv_files
 
 def launch_rag_system(csv_file_path: str = None):
@@ -529,9 +534,9 @@ def launch_rag_system(csv_file_path: str = None):
             print(f"✅ Auto-detected CSV file: {csv_file_path}")
         else:
             print("❌ No CSV files found!")
-            print("\n🔧 To add your CSV file:")
-            print("1. Upload via Colab file browser (left sidebar)")
-            print("2. Or run: csv_path = upload_csv_file()")
+            print("\n🔧 To add your CSV file (VS Code):")
+            print("1. Place your CSV in the project folder or data/ subfolder")
+            print("2. Or run: csv_path = upload_csv_file()  (prompts for path)")
             print("3. Then run: launch_rag_system(csv_path)")
             return None
 
@@ -543,9 +548,9 @@ def launch_rag_system(csv_file_path: str = None):
         print(f"🚀 Launching RAG system with: {csv_file_path}")
         interface = create_rag_interface(csv_file_path)
         interface.launch(
-            share=True,  # Creates a public link for sharing
-            server_name="0.0.0.0",
-            server_port=7860,
+            share=False,  # Local VS Code: no ngrok tunnel needed
+            server_name="127.0.0.1",
+            server_port=7861,  # Separate port from app.py (7860)
             debug=False,
             show_error=True
         )
@@ -556,34 +561,32 @@ def launch_rag_system(csv_file_path: str = None):
 
 # Convenience functions for easy use
 def quick_start():
-    """Quick start function - upload and launch in one go"""
+    """Quick start function - prompt for CSV path and launch."""
     print("🚀 Quick Start Guide:")
-    if IN_COLAB:
-        print("1. Uploading CSV file...")
-        csv_path = upload_csv_file()
-        if csv_path:
-            print("2. Launching RAG system...")
-            return launch_rag_system(csv_path)
-        else:
-            print("❌ No file uploaded")
-            return None
+    csv_path = upload_csv_file()
+    if csv_path:
+        print("Launching RAG system...")
+        return launch_rag_system(csv_path)
     else:
-        print("Upload function only available in Colab")
+        print("❌ No file provided. Attempting auto-detect...")
         return launch_rag_system()
 
 def start_with_file(file_path: str):
     """Start RAG system with specific file path"""
     return launch_rag_system(file_path)
 
-# Auto-run when imported in Colab
-print("="*60)
-print("🧠 EEG Alzheimer's RAG System - Ready!")
-print("="*60)
-print("\n📚 Available functions:")
-print("• quick_start() - Upload file and launch")
-print("• launch_rag_system() - Auto-detect CSV and launch")
-print("• start_with_file('/path/to/file.csv') - Launch with specific file")
-print("• upload_csv_file() - Upload CSV file")
-print("\n🚀 Quick Start:")
-print("Run: quick_start()")
-print("="*60)
+if __name__ == "__main__":
+    print("="*60)
+    print("🧠 EEG Alzheimer's RAG System - Ready!")
+    print("="*60)
+    print("\n📚 Usage (VS Code):")
+    print("• python ragbot.py                          - Auto-detect CSV and launch")
+    print("• from ragbot import start_with_file")
+    print("  start_with_file('data/neurology_faq.csv') - Launch with specific file")
+    print("• from ragbot import quick_start")
+    print("  quick_start()                             - Prompt for CSV path")
+    print("\n🌐 App will open at: http://127.0.0.1:7861")
+    print("="*60)
+    # Launch directly with the correct Q&A dataset
+    DEFAULT_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "neurology_faq.csv")
+    launch_rag_system(DEFAULT_CSV)
