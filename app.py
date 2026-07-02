@@ -19,12 +19,20 @@ from src.model_utils import load_model, predict_image
 from src.eeg_utils import extract_signal_from_image, predict_from_signal
 from src.report_utils import generate_pdf, RISK_LEVELS
 from ragbot import EEGAlzheimersRAG
+from fastapi.middleware.cors import CORSMiddleware
 
 BASE_DIR = Path(__file__).resolve().parent
 REPORTS_DIR = BASE_DIR / "reports"
 REPORTS_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="Neuro Shield API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # tighten this to your Vercel URL once you have it (see Step 5)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ── lazy singletons ──
 _alz_model = None
@@ -179,4 +187,5 @@ app.mount("/", StaticFiles(directory=str(BASE_DIR / "static"), html=True), name=
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=7860)
+    port = int(os.environ.get("PORT", 7860))
+    uvicorn.run(app, host="0.0.0.0", port=port)
